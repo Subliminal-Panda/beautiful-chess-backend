@@ -3,16 +3,33 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
+
 import psycopg2
 import os
 
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
+
+api_v1_cors_config = {
+    "origins": ["*"]
+}
+
+CORS(app, resources={
+    r"/*": api_v1_cors_config
+})
+
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://yscghqqerxizxq:fa0b50341d56eef162e9f5e13bc7b718274f7ff10f2419e525de2f05bf1fa7c9@ec2-34-195-69-118.compute-1.amazonaws.com:5432/d3ribmkrmp9us1"
+find_uri = os.environ.get('DATABASE_URL')
+if find_uri is not None:
+    uri = find_uri.replace('postgres', 'postgresql', 1)
+else:
+    uri = "sqlite:///" + os.path.join(basedir, "app.sqlite")
+
+app.config["SQLALCHEMY_DATABASE_URI"] = uri
+# app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://yscghqqerxizxq:fa0b50341d56eef162e9f5e13bc7b718274f7ff10f2419e525de2f05bf1fa7c9@ec2-34-195-69-118.compute-1.amazonaws.com:5432/d3ribmkrmp9us1"
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
-CORS(app)
-bcrypt = Bcrypt(app)
+# CORS(app)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
